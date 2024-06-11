@@ -1,38 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'SuccessScreen.dart';
+import 'screens/doc_view.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+class loginScreen extends StatelessWidget {
+  const loginScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController usernameController = TextEditingController();
-    TextEditingController passwordController = TextEditingController();
-
-    Future<void> login() async {
-      final response = await http.post(
-        Uri.parse('http://localhost/localconnect/login.php'), // Replace with your server URL
-        body: {
-          'username': usernameController.text,
-          'password': passwordController.text,
-        },
-      );
-
-      if (response.body == 'success') {
-        // Navigate to SuccessScreen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SuccessScreen()),
-        );
-      } else {
-        // Show failure message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Failed')),
-        );
-      }
-    }
-
     return Scaffold(
         body: Stack(
       children: [
@@ -40,9 +13,9 @@ class LoginScreen extends StatelessWidget {
           height: double.infinity,
           width: double.infinity,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(colors: [
-              Color(0xffB81736),
-              Color(0xff281537),
+            gradient: LinearGradient(colors: [ 
+            Color.fromARGB(255, 27, 7, 136),
+            Color.fromARGB(255, 131, 108, 216),
             ]),
           ),
           child: const Padding(
@@ -74,7 +47,6 @@ class LoginScreen extends StatelessWidget {
                   Container(
                     width: 335,
                     child: TextField(
-                      controller: usernameController,
                       decoration: InputDecoration(
                           suffixIcon: Icon(
                             Icons.check,
@@ -92,8 +64,6 @@ class LoginScreen extends StatelessWidget {
                   Container(
                     width: 335,
                     child: TextField(
-                      controller: passwordController,
-                      obscureText: true,
                       decoration: InputDecoration(
                           suffixIcon: Icon(
                             Icons.visibility_off,
@@ -125,13 +95,17 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: login,
-                      child: Container(
-                        height: 35,
-                        width: 90,
+                  SizedBox(height: 20,),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Disbursement()));
+                    },
+                    child: Container(
+                      height: 35,
+                        width: 100,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
                           gradient: const LinearGradient(
@@ -141,15 +115,13 @@ class LoginScreen extends StatelessWidget {
                             ],
                           ),
                         ),
-                        child: const Center(
-                          child: Text(
-                            'SIGN IN',
-                            style: TextStyle(
+                      child: const Center(
+                        child: Text(
+                          'Log in',
+                          style: TextStyle(
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Colors.white,
-                            ),
-                          ),
+                              color: Colors.white),
                         ),
                       ),
                     ),
