@@ -2,59 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'loginScreen.dart';
 
-class FadeOutText extends StatefulWidget {
-  @override
-  _FadeOutTextState createState() => _FadeOutTextState();
-}
-
-class _FadeOutTextState extends State<FadeOutText> with TickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 1),
-      vsync: this,
-    );
-    _animation = Tween<double>(begin: 1, end: 0).animate(_controller)
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          // Navigate to the next screen when animation completes
-          Navigator.pushReplacementNamed(context, '/nextScreen');
-        }
-      });
-    _controller.forward();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _animation,
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Center(
-          child: Text(
-            'Welcome back!',
-            style: TextStyle(
-              fontSize: 30,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-}
-
-
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
   @override
@@ -66,15 +13,15 @@ class WelcomeScreen extends StatelessWidget {
        decoration: const BoxDecoration(
          gradient: LinearGradient(
            colors: [
-             Color(0xffB81736),
-             Color(0xff281537),
+             Color.fromARGB(255, 27, 7, 136),
+             Color.fromARGB(255, 51, 31, 121),
            ]
          )
        ),
        child: Column(
          children: [
            const Padding(
-             padding: EdgeInsets.only(top: 200.0),
+             padding: EdgeInsets.only(top: 300.0),
            ),
            const SizedBox(
              height: 100,
@@ -87,7 +34,7 @@ class WelcomeScreen extends StatelessWidget {
           GestureDetector(
             onTap: (){
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LoginScreen()));
+                  MaterialPageRoute(builder: (context) => const loginScreen()));
             },
             child: Container(
               height: 53,
