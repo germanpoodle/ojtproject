@@ -1,5 +1,5 @@
-import 'package:ojtproject/screens/disbursement_check.dart';
-import 'package:ojtproject/models/transaction_data_model.dart';
+import 'package:day13/screens/disbursement_check.dart';
+import 'package:day13/screens/transaction_history.dart';
 import 'package:flutter/material.dart';
 
 class Disbursement extends StatelessWidget {
