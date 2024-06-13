@@ -7,6 +7,9 @@ String getCurrentDate() {
   String formattedDate = "${now.month}-${now.day}-${now.year}";
   return formattedDate;
 }
+void navigateToNotifications(BuildContext context) {
+  Navigator.pushNamed(context, '/notifications');
+}
 
 class DisbursementCheque extends StatelessWidget {
   const DisbursementCheque({Key? key}) : super(key: key);
@@ -24,7 +27,7 @@ class DisbursementCheque extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Disbursement',
+              'For Apporval',
               style: TextStyle(
                 fontSize: 25,
                 color: Color.fromARGB(255, 233, 227, 227),
@@ -36,11 +39,11 @@ class DisbursementCheque extends StatelessWidget {
                 Container(
                   margin: EdgeInsets.only(right: screenWidth * 0.02),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () { navigateToNotifications(context);},
                     icon: Icon(
                       Icons.notifications,
                       size: 25,
-                      color: Color.fromARGB(255, 233, 227, 227),
+                      color: Color.fromARGB(255, 126, 124, 124),
                     ),
                   ),
                 ),
