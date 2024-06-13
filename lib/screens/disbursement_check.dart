@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:day13/widgets/card.dart';
+import 'package:ojtproject/screens/filter_pop_up.dart';
+import 'package:ojtproject/widget/card.dart';
 
 String getCurrentDate() {
   DateTime now = DateTime.now();
@@ -79,18 +80,38 @@ class DisbursementCheque extends StatelessWidget {
                         color: Color.fromARGB(255, 8, 32, 134),
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 28, 29, 27),
-                      ),
-                      child: Text(
-                        'Filter Results',
-                        style: TextStyle(
-                          color: Color.fromARGB(255, 255, 255, 255),
-                        ),
-                      ),
-                    ),
+                    GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return FilterDialog();
+                  },
+                );
+              },
+              child: Container(
+                height: 35,
+                width: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 15, 14, 14),
+                      Color(0xff281537),
+                    ],
+                  ),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Filter Results',
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
+                  ),
+                ),
+              ),
+            ),
                   ],
                 ),
               ),
