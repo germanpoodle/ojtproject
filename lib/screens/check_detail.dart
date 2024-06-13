@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
+import 'filter_pop_up.dart'; 
 
 class CheckDetailsScreen extends StatelessWidget {
-  const CheckDetailsScreen({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,7 +15,6 @@ class CheckDetailsScreen extends StatelessWidget {
           CircleAvatar(
             child: Icon(Icons.person),
           ),
-          SizedBox(width: 20,)
         ],
       ),
       body: Padding(
@@ -89,7 +87,12 @@ class CheckDetailsScreen extends StatelessWidget {
             SizedBox(height: 20),
             GestureDetector(
               onTap: () {
-              
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return FilterDialog();
+                  },
+                );
               },
               child: Container(
                 height: 35,
@@ -105,7 +108,7 @@ class CheckDetailsScreen extends StatelessWidget {
                 ),
                 child: const Center(
                   child: Text(
-                    'View Details',
+                    'Filter Results',
                     style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
