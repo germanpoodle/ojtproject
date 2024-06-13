@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mysql1/mysql1.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -16,39 +15,47 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
   bool _isLoading = false;
 
-  Future<void> _login() async {
+  Future<bool> _login(String username, String password) async {
+    final url = 'http://localhost/localconnect/login.php'; // Adjust the URL to your PHP script location
+    final headers = {"Content-Type": "application/json"};
+    final body = jsonEncode({'username': username, 'password': password});
+
+    final response = await http.post(Uri.parse(url), headers: headers, body: body);
+
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      if (responseBody['status'] == 'success') {
+        // Login successful
+        return true;
+      } else {
+        // Login failed
+        print('Login failed: ${responseBody['message']}');
+        return false;
+      }
+    } else {
+      print('Server error: ${response.reasonPhrase}');
+      return false;
+    }
+  }
+
+  void _handleLogin() async {
     setState(() {
       _isLoading = true;
     });
 
-    try {
-      final response = await http.post(
-        Uri.parse('http://localhost/localconnect/login.php'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          'username': _usernameController.text,
-          'password': _passwordController.text,
-        }),
+    final success = await _login(_usernameController.text, _passwordController.text);
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
       );
-
-      final Map<String, dynamic> responseData = json.decode(response.body);
-
-      if (responseData['status'] == 'success') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
-      } else {
-        _showErrorDialog(responseData['message']);
-      }
-    } catch (e) {
-      _showErrorDialog('Failed to connect to the server');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    } else {
+      _showErrorDialog('Login failed. Please try again.');
     }
   }
 
@@ -56,14 +63,14 @@ class _LoginScreenState extends State<LoginScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Error'),
+        title: const Text('Error'),
         content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text('OK'),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -132,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Container(
                       width: 335,
                       child: TextField(
@@ -162,12 +169,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     const SizedBox(height: 20),
                     Container(
-                      margin: EdgeInsets.only(right: 95),
+                      margin: const EdgeInsets.only(right: 95),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           'Forgot Password?',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                             color: Color(0xff281537),
@@ -175,9 +182,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     GestureDetector(
-                      onTap: _isLoading ? null : _login,
+                      onTap: _isLoading ? null : _handleLogin,
                       child: Container(
                         height: 35,
                         width: 100,
@@ -203,8 +210,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                     if (_isLoading)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20.0),
+                      const Padding(
+                        padding: EdgeInsets.only(top: 20.0),
                         child: CircularProgressIndicator(),
                       ),
                   ],
@@ -225,65 +232,74 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-       height: double.infinity,
-       width: double.infinity,
-       decoration: const BoxDecoration(
-         gradient: LinearGradient(
-           colors: [
-             Color.fromARGB(255, 112, 23, 184),
-             Color(0xff281537),
-           ]
-         )
-       ),
-       child: Column(
-         children: [
-           const Padding(
-             padding: EdgeInsets.only(top: 400.0),
-           ),
-          const SizedBox(height: 30,),
-          GestureDetector(
-            onTap: (){
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const DisbursementCheque()));
-            },
-            child: Container(
-              height: 76,
-              width: 357,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                
-                border: Border.all(color: Colors.white),
-              ),
-              child: const Center(child: Text('Check Disbursement',style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white
-              ),),),
-            ),
+        height: double.infinity,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color.fromARGB(255, 112, 23, 184),
+              Color(0xff281537),
+            ],
           ),
-          const SizedBox(height: 15,),
-          GestureDetector(
-            onTap: (){
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const DisbursementCheque()));
-            },
-            child: Container(
-              height: 76,
-              width: 357,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Colors.white),
-              ),
-              child: const Center(child: Text('Transaction History',style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white
-              ),),),
+        ),
+        child: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 400.0),
             ),
-          ),
-          ]
-       ),
-     ),
+            const SizedBox(height: 30),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const DisbursementCheque()));
+              },
+              child: Container(
+                height: 76,
+                width: 357,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Check Disbursement',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 15),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const DisbursementCheque()));
+              },
+              child: Container(
+                height: 76,
+                width: 357,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: Colors.white),
+                ),
+                child: const Center(
+                  child: Text(
+                    'Transaction History',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
