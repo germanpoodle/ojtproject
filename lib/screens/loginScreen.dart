@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:mysql1/mysql1.dart';
 import 'dart:convert';
-import 'homePage.dart'; // Import the homepage
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -21,29 +21,34 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    final response = await http.post(
-      Uri.parse('http://localhost/localconnect/login.php'),
-      body: {
-        'username': _usernameController.text,
-        'password': _passwordController.text,
-      },
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/localconnect/login.php'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{
+          'username': _usernameController.text,
+          'password': _passwordController.text,
+        }),
+      );
 
-    setState(() {
-      _isLoading = false;
-    });
+      final Map<String, dynamic> responseData = json.decode(response.body);
 
-    if (response.statusCode == 200) {
-      if (response.body.trim() == 'success') {
+      if (responseData['status'] == 'success') {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else {
-        _showErrorDialog('Invalid username or password');
+        _showErrorDialog(responseData['message']);
       }
-    } else {
-      _showErrorDialog('Failed to connect to server');
+    } catch (e) {
+      _showErrorDialog('Failed to connect to the server');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -208,6 +213,93 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+       height: double.infinity,
+       width: double.infinity,
+       decoration: const BoxDecoration(
+         gradient: LinearGradient(
+           colors: [
+             Color.fromARGB(255, 112, 23, 184),
+             Color(0xff281537),
+           ]
+         )
+       ),
+       child: Column(
+         children: [
+           const Padding(
+             padding: EdgeInsets.only(top: 400.0),
+           ),
+          const SizedBox(height: 30,),
+          GestureDetector(
+            onTap: (){
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const DisbursementCheque()));
+            },
+            child: Container(
+              height: 76,
+              width: 357,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                
+                border: Border.all(color: Colors.white),
+              ),
+              child: const Center(child: Text('Check Disbursement',style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white
+              ),),),
+            ),
+          ),
+          const SizedBox(height: 15,),
+          GestureDetector(
+            onTap: (){
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const DisbursementCheque()));
+            },
+            child: Container(
+              height: 76,
+              width: 357,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.white),
+              ),
+              child: const Center(child: Text('Transaction History',style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white
+              ),),),
+            ),
+          ),
+          ]
+       ),
+     ),
+    );
+  }
+}
+
+class DisbursementCheque extends StatelessWidget {
+  const DisbursementCheque({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Disbursement Cheque'),
+      ),
+      body: Container(
+        alignment: Alignment.center,
+        child: const Text('Disbursement Cheque Page'),
       ),
     );
   }
