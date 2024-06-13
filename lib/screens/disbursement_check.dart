@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ojtproject/widget/card.dart';
+import 'package:day13/widgets/card.dart';
 
 String getCurrentDate() {
   DateTime now = DateTime.now();
@@ -12,14 +12,16 @@ class DisbursementCheque extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(255, 9, 41, 145),
         toolbarHeight: 77,
         automaticallyImplyLeading: false,
         title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            SizedBox(width: 15, height: 45),
             Text(
               'Disbursement',
               style: TextStyle(
@@ -27,28 +29,31 @@ class DisbursementCheque extends StatelessWidget {
                 color: Color.fromARGB(255, 233, 227, 227),
               ),
             ),
-            SizedBox(width: 260),
-            Icon(
-              size: 25,
-              Icons.notifications,
-              color: Color.fromARGB(255, 233, 227, 227),
-            ),
-            SizedBox(width: 5),
             Row(
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
-                  child: ElevatedButton(
+                  margin: EdgeInsets.only(right: screenWidth * 0.02),
+                  child: IconButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(125, 68, 65, 65),
-                      padding: EdgeInsets.zero,
-                      shape: CircleBorder(),
-                    ),
-                    child: Icon(
-                      Icons.person,
+                    icon: Icon(
+                      Icons.notifications,
                       size: 25,
                       color: Color.fromARGB(255, 233, 227, 227),
                     ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(125, 68, 65, 65),
+                    padding: EdgeInsets.all(5),
+                    shape: CircleBorder(),
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    size: 25,
+                    color: Color.fromARGB(255, 233, 227, 227),
                   ),
                 ),
               ],
@@ -61,49 +66,40 @@ class DisbursementCheque extends StatelessWidget {
           child: Column(
             children: [
               Container(
+                margin: EdgeInsets.symmetric(
+                    vertical: 15, horizontal: screenWidth * 0.05),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(
-                      padding: EdgeInsets.all(27.5),
-                      child: Container(
-                        margin: EdgeInsets.only(top: 15),
-                        child: Text(
-                          getCurrentDate(),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color.fromARGB(255, 8, 32, 134),
-                          ),
-                        ),
+                    Text(
+                      getCurrentDate(),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color.fromARGB(255, 8, 32, 134),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 290),
-                      child: Container(
-                        margin: EdgeInsets.only(top: 15),
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 28, 29, 27),
-                          ),
-                          child: Text(
-                            'Filter Results',
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 255, 255, 255),
-                            ),
-                          ),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 28, 29, 27),
+                      ),
+                      child: Text(
+                        'Filter Results',
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 255, 255, 255),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
+              SizedBox(height: 15),
               Container(
-                width: double.infinity,
-                height: MediaQuery.of(context).size.height * 0.82,
-                child: 
-                CustomCardExample(
-              ),
+                margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+                width: screenWidth * 0.9,
+                height: MediaQuery.of(context).size.height * 0.23,
+                child: CustomCardExample(),
               ),
             ],
           ),
