@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CheckDetailsScreen extends StatelessWidget {
+  const CheckDetailsScreen({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -14,6 +16,7 @@ class CheckDetailsScreen extends StatelessWidget {
           CircleAvatar(
             child: Icon(Icons.person),
           ),
+          SizedBox(width: 20,)
         ],
       ),
       body: Padding(
