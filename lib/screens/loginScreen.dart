@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '/screens/doc_view.dart';
+import 'package:ojtproject/screens/homePage.dart';
 import 'dart:convert';
 
 class LoginScreen extends StatelessWidget {
@@ -8,7 +8,7 @@ class LoginScreen extends StatelessWidget {
 
   Future<void> loginUser(BuildContext context, String username, String password) async {
     try {
-      final url = Uri.parse('http://192.168.1.21/localconnect/login.php');
+      final url = Uri.parse('http://localhost/localconnect/login.php');
       final response = await http.post(
         url,
         body: {
