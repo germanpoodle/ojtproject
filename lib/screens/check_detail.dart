@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'filter_pop_up.dart';
-import 'notifications.dart';
 
 String getCurrentDate() {
   DateTime now = DateTime.now();

@@ -10,7 +10,7 @@ $servername = "localhost";
 $username = "root";
 $password = "";
 $database = "db_approval";
-$port = '3307';
+$port = '3306';
 
 $conn = new mysqli($servername, $username, $password, $database, $port);
 if ($conn->connect_error) {
