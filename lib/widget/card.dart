@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/transaction.dart';
-import 'package:day13/screens/check_details.dart';
+import '../screens/check_detail.dart';
 
 class CustomCardExample extends StatelessWidget {
   final Transaction transaction;
@@ -80,12 +80,12 @@ class CustomCardExample extends StatelessWidget {
                       vertical: 12,
                     ),
                     minimumSize: Size(MediaQuery.of(context).size.width * 0.008,
-                        25), 
+                        25),
                   ),
                   child: Text(
                     'View Details',
                     style: TextStyle(
-                      fontSize: 9, 
+                      fontSize: 9,
                     ),
                   ),
                 ),
