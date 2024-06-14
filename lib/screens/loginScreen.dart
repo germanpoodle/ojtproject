@@ -1,12 +1,29 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:ojtproject/screens/homePage.dart';
 import 'dart:convert';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  String password = '';
+  String username = '';
+
+  bool _isLoading = false;
+  bool _isPasswordVisible = false;
+
   Future<void> loginUser(BuildContext context, String username, String password) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       final url = Uri.parse('http://localhost/localconnect/login.php');
       final response = await http.post(
@@ -22,6 +39,9 @@ class LoginScreen extends StatelessWidget {
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         if (jsonResponse['status'] == 'success') {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login Successful')),
+          );
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const HomePage()),
@@ -67,14 +87,15 @@ class LoginScreen extends StatelessWidget {
           );
         },
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    String username = '';
-    String password = '';
-
     return Scaffold(
       body: Stack(
         children: [
@@ -143,14 +164,21 @@ class LoginScreen extends StatelessWidget {
                         onChanged: (value) {
                           password = value;
                         },
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            Icons.visibility_off,
-                            color: Colors.grey,
+                        obscureText: !_isPasswordVisible,
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
                           ),
                           labelText: 'Password',
-                          labelStyle: TextStyle(
+                          labelStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Color(0xffB81736),
                           ),
@@ -179,7 +207,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     GestureDetector(
@@ -210,6 +238,12 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (_isLoading)
+                      const SizedBox(
+                        height: 20,
+                      ),
+                    if (_isLoading)
+                      const CircularProgressIndicator(),
                   ],
                 ),
               ),
