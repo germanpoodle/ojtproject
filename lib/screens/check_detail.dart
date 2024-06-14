@@ -1,21 +1,70 @@
 import 'package:flutter/material.dart';
-import 'filter_pop_up.dart'; 
+import 'filter_pop_up.dart';
+import 'notifications.dart';
+
+String getCurrentDate() {
+  DateTime now = DateTime.now();
+  String formattedDate = "${now.month}-${now.day}-${now.year}";
+  return formattedDate;
+}
+
+void navigateToNotifications(BuildContext context) {
+  Navigator.pushNamed(context, '/notifications');
+}
 
 class CheckDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Check Details'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {},
-          ),
-          CircleAvatar(
-            child: Icon(Icons.person),
-          ),
-        ],
+        backgroundColor: Color.fromARGB(255, 9, 41, 145),
+        toolbarHeight: 77,
+        automaticallyImplyLeading: false,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Check Details',
+              style: TextStyle(
+                fontSize: 25,
+                color: Color.fromARGB(255, 233, 227, 227),
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  margin: EdgeInsets.only(right: screenWidth * 0.02),
+                  child: IconButton(
+                    onPressed: () {
+                      navigateToNotifications(context);
+                    },
+                    icon: Icon(
+                      Icons.notifications,
+                      size: 25,
+                      color: Color.fromARGB(255, 126, 124, 124),
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(125, 68, 65, 65),
+                    padding: EdgeInsets.all(5),
+                    shape: CircleBorder(),
+                  ),
+                  child: Icon(
+                    Icons.person,
+                    size: 25,
+                    color: Color.fromARGB(255, 233, 227, 227),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -82,39 +131,6 @@ class CheckDetailsScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
                 backgroundColor: Color.fromARGB(255, 218, 51, 51),
-              ),
-            ),
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return FilterDialog();
-                  },
-                );
-              },
-              child: Container(
-                height: 35,
-                width: 100,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xffB81736),
-                      Color(0xff281537),
-                    ],
-                  ),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Filter Results',
-                    style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white),
-                  ),
-                ),
               ),
             ),
           ],
