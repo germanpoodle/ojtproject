@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'screens/Welcomescreen.dart';
+import 'screens/notifications.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -22,6 +23,12 @@ class iLeadDocumentViewer extends StatelessWidget {
         useMaterial3: true,
       ),
       home:const WelcomeScreen(),
+           routes: {
+    '/notifications': (context) => NotificationScreen(context),
+  },
     );
   }
+     void navigateToNotifications(BuildContext context) {
+  Navigator.pushNamed(context, '/notifications');
+}
 }
