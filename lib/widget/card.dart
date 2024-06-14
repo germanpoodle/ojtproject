@@ -1,8 +1,12 @@
-import 'package:ojtproject/screens/check_detail.dart';
 import 'package:flutter/material.dart';
+import '../models/transaction.dart';
+import 'package:day13/screens/check_details.dart';
 
 class CustomCardExample extends StatelessWidget {
-  const CustomCardExample({Key? key}) : super(key: key);
+  final Transaction transaction;
+
+  const CustomCardExample({Key? key, required this.transaction})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +23,14 @@ class CustomCardExample extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '[Transacting Party]',
+                  transaction.transactingParty,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  '[Trans_date]',
+                  transaction.transDate,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
@@ -36,7 +40,7 @@ class CustomCardExample extends StatelessWidget {
             ),
             SizedBox(height: 8),
             Text(
-              '[Check No.]',
+              transaction.checkNo,
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.black,
@@ -47,7 +51,7 @@ class CustomCardExample extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '[Check Bank Drawee]',
+                  transaction.checkBankDrawee,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.black,
@@ -58,17 +62,32 @@ class CustomCardExample extends StatelessWidget {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => CheckDetailsScreen()),
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            CheckDetailsScreen(transaction: transaction),
+                      ),
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.grey,
+                    backgroundColor: Colors
+                        .grey,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(18.0),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: MediaQuery.of(context).size.width *
+                          0.004,
+                      vertical: 12,
+                    ),
+                    minimumSize: Size(MediaQuery.of(context).size.width * 0.008,
+                        25), 
                   ),
-                  child: Text('View Details'),
+                  child: Text(
+                    'View Details',
+                    style: TextStyle(
+                      fontSize: 9, 
+                    ),
+                  ),
                 ),
               ],
             ),
