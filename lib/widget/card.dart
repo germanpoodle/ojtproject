@@ -1,4 +1,4 @@
-import 'package:day13/screens/check_details.dart';
+import 'package:ojtproject/screens/check_detail.dart';
 import 'package:flutter/material.dart';
 
 class CustomCardExample extends StatelessWidget {

@@ -1,7 +1,7 @@
 <?php
 $servername = "localhost";
-$username = "username"; 
-$password = "password"; 
+$username = "username";
+$password = "password";
 $database = "db_approval";
 $port = 3307; //Change according to your port
 

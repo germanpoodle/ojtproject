@@ -1,3 +1,5 @@
 {
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "dart.flutterSdkPath": "/Users/gabz_1/Downloads/flutter/bin",
+    "dart.sdkPath": "/Users/gabz_1/Downloads/flutter/bin"
 }
