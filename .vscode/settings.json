@@ -1,5 +1,20 @@
 {
     "java.compile.nullAnalysis.mode": "automatic",
-    "dart.flutterSdkPath": "/Users/gabz_1/Downloads/flutter/bin",
-    "dart.sdkPath": "/Users/gabz_1/Downloads/flutter/bin"
+    "dart.sdkPath": "/Users/gabz_1/Downloads/flutter/bin",
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "127.0.0.1",
+            "port": 3307,
+            "driver": "MariaDB",
+            "name": "local connect",
+            "database": "db_approval",
+            "username": "root",
+            "password": ""
+        }
+    ]
 }

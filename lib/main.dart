@@ -1,19 +1,16 @@
+import '/WelcomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'screens/Welcomescreen.dart';
-import 'screens/notifications.dart';
-
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
   ));
-  runApp(const iLeadDocumentViewer());
+  runApp(const MyApp());
 }
 
-class iLeadDocumentViewer extends StatelessWidget {
-  const iLeadDocumentViewer({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,12 +20,6 @@ class iLeadDocumentViewer extends StatelessWidget {
         useMaterial3: true,
       ),
       home:const WelcomeScreen(),
-           routes: {
-    '/notifications': (context) => NotificationScreen(context),
-  },
     );
   }
-     void navigateToNotifications(BuildContext context) {
-  Navigator.pushNamed(context, '/notifications');
-}
 }
