@@ -1,3 +1,6 @@
+import 'package:ojtproject/admin_screens/transactions_history.dart';
+import 'package:ojtproject/screens_user/user_upload.dart';
+
 import 'disbursement_details.dart';
 
 import 'package:flutter/material.dart';
@@ -28,7 +31,7 @@ class UserHomePage extends StatelessWidget {
           GestureDetector(
             onTap: (){
               Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => DisbursementDetailsScreen()));
+                  MaterialPageRoute(builder: (context) => const UserUpload()));
             },
             child: Container(
               height: 76,
@@ -48,10 +51,10 @@ class UserHomePage extends StatelessWidget {
           ),
           const SizedBox(height: 15,),
           GestureDetector(
-            // onTap: (){
-            //   Navigator.push(context,
-            //       MaterialPageRoute(builder: (context) => const TransactionHistory()));
-            // },
+             onTap: (){
+               Navigator.push(context,
+                   MaterialPageRoute(builder: (context) => const TransactionsScreen()));
+             },
             child: Container(
               height: 76,
               width: 357,

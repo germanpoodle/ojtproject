@@ -3,6 +3,11 @@ import '../models/transaction.dart';
 import '/admin_screens/check_details.dart';
 import 'package:intl/intl.dart';
 
+String formatDate(DateTime date) {
+    final DateFormat formatter = DateFormat('MM/dd/yyyy');
+    return formatter.format(date);
+  }
+  
 class CustomCardExample extends StatelessWidget {
   final Transaction transaction;
 
@@ -40,7 +45,7 @@ class CustomCardExample extends StatelessWidget {
                 ),
                 SizedBox(width: screenWidth * 0.02),
                 Text(
-                  transaction.transDate,
+                  transaction.transDate as String,
                   style: TextStyle(
                     fontSize: 12 * textScaleFactor,
                     color: Colors.grey,
@@ -72,7 +77,7 @@ class CustomCardExample extends StatelessWidget {
                 ),
                 SizedBox(width: screenWidth * 0.02),
                 Text(
-                  '₱ ${NumberFormat('#,##0.00').format(double.parse(transaction.checkAmount))}',
+                  '₱ ${NumberFormat('#,##0.00').format(double.parse(transaction.checkAmount as String))}',
                   style: TextStyle(
                     fontSize: 14 * textScaleFactor,
                     color: Colors.black,

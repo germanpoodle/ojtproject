@@ -22,7 +22,7 @@ class Transaction {
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       transactingParty: json['transacting_party'] ?? '',
-      transDate: json['check_date'] ?? '', 
+      transDate: json['check_date'] ?? '',
       checkNo: json['check_no'] ?? '',
       docType: json['doc_type'] ?? '',
       checkAmount: json['check_amount'],
