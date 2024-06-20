@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ojtproject/models/disbursement_data_model.dart';
 import 'package:ojtproject/screens/user/user_disbursement.dart';
 import 'dart:convert';
-import 'package:syncfusion_flutter_datagrid/datagrid.dart';
-import 'package:ojtproject/models/disbursement_data_model.dart';
+import 'package:scrollable_table_view/scrollable_table_view.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   runApp(const UserHomepage());
@@ -14,10 +15,9 @@ class UserHomepage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
-
+      home: HomePage(),
     );
   }
 }
@@ -31,36 +31,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late List<TransactionData> transactions;
-  late List<TransactionData> filteredTransactions;
   late bool isLoading;
   String selectedColumn = 'docType';
   List<String> docTypes = [];
-  List<String> transactionStatuses = [];
+  int currentPage = 1;
+  int rowsPerPage = 20;
 
   @override
   void initState() {
     super.initState();
     isLoading = true;
+    transactions = [];
     fetchTransactions();
   }
 
   Future<void> fetchTransactions() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://localhost/localconnect/fetch_transaction_data.php'));
+          'http://127.0.0.1/localconnect/fetch_transaction_data.php'));
 
       if (response.statusCode == 200) {
         setState(() {
           final List<dynamic> data = json.decode(response.body);
           transactions =
               data.map((json) => TransactionData.fromJson(json)).toList();
-          filteredTransactions = transactions;
           isLoading = false;
 
-          // Extract unique values for docType and transactionStatus
+          // Extract unique values for docType
           docTypes = transactions.map((e) => e.docType).toSet().toList();
-          transactionStatuses =
-              transactions.map((e) => e.transactionStatus).toSet().toList();
         });
       } else {
         throw Exception(
@@ -72,126 +70,39 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void showFilterDialog() {
-    List<String> selectedDocTypes = [];
-    List<String> selectedTransactionStatuses = [];
-    String? docNoSearch;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Filter Criteria'),
-          content: StatefulBuilder(
-            builder: (BuildContext context, StateSetter setState) {
-              return SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('Filter by Doc Type'),
-                    Wrap(
-                      spacing: 8.0,
-                      children: docTypes.map((String value) {
-                        return ChoiceChip(
-                          label: Text(value),
-                          selected: selectedDocTypes.contains(value),
-                          onSelected: (bool selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedDocTypes.add(value);
-                              } else {
-                                selectedDocTypes.remove(value);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Filter by Transaction Status'),
-                    Wrap(
-                      spacing: 8.0,
-                      children: transactionStatuses.map((String value) {
-                        return ChoiceChip(
-                          label: Text(value),
-                          selected: selectedTransactionStatuses.contains(value),
-                          onSelected: (bool selected) {
-                            setState(() {
-                              if (selected) {
-                                selectedTransactionStatuses.add(value);
-                              } else {
-                                selectedTransactionStatuses.remove(value);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Search by Doc No.'),
-                    TextField(
-                      decoration: const InputDecoration(
-                          border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0))),
-                          hintText: 'Enter Doc No.'),
-                      onChanged: (value) {
-                        setState(() {
-                          docNoSearch = value;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Filter'),
-              onPressed: () {
-                setState(() {
-                  filteredTransactions = transactions.where((transaction) {
-                    bool matchesDocType = selectedDocTypes.isEmpty ||
-                        selectedDocTypes.contains(transaction.docType);
-                    bool matchesTransactionStatus =
-                        selectedTransactionStatuses.isEmpty ||
-                            selectedTransactionStatuses
-                                .contains(transaction.transactionStatus);
-
-                    // Modify matchesDocNo to check for exact integer value
-                    bool matchesDocNo = docNoSearch == null ||
-                        (transaction.docNo.toString() == docNoSearch);
-
-                    return matchesDocType &&
-                        matchesTransactionStatus &&
-                        matchesDocNo;
-                  }).toList();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+  void previousPage() {
+    setState(() {
+      if (currentPage > 1) currentPage--;
+    });
   }
 
-  void resetFilters() {
+  void nextPage() {
     setState(() {
-      filteredTransactions = transactions;
+      if ((currentPage + 1) * rowsPerPage <= transactions.length) currentPage++;
     });
+  }
+
+  String formatDate(DateTime date) {
+    final DateFormat formatter = DateFormat('MM/dd/yyyy');
+    return formatter.format(date);
+  }
+
+  String formatAmount(double amount) {
+    final NumberFormat currencyFormat = NumberFormat.currency(
+      locale: 'en_PH', // Filipino locale
+      symbol: '₱', // Currency symbol for Philippine Peso
+      decimalDigits: 2, // Number of decimal places
+    );
+    return currencyFormat.format(amount);
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final paginatedTransactions = transactions
+        .skip((currentPage - 1) * rowsPerPage)
+        .take(rowsPerPage)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -246,145 +157,126 @@ class _HomePageState extends State<HomePage> {
                 borderRadius: BorderRadius.zero,
                 child: Container(
                   margin: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12.0),
-                    border: Border.all(color: Colors.black54),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            child: ElevatedButton(
-                              child: Text("Filter Criteria"),
-                              onPressed: showFilterDialog,
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.all(8),
-                            child: ElevatedButton(
-                              child: Text("Reset"),
-                              onPressed: resetFilters,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Expanded(
-                        child: SfDataGrid(
-                          gridLinesVisibility: GridLinesVisibility.both,
-                          headerGridLinesVisibility: GridLinesVisibility.both,
-                          source: _DataSource(filteredTransactions),
-                          columns: <GridColumn>[
-                            _buildGridColumn('Document Type'),
-                            _buildGridColumn('Document Number'),
-                            _buildGridColumn('Transacting Party'),
-                            _buildGridColumn('Transaction Date'),
-                            _buildGridColumn('Check Amount'),
-                            _buildGridColumn('Transaction Status'),
-                            GridColumn(
-                              columnName: 'remarks',
-                              label: Container(
-                                padding: const EdgeInsets.all(8.0),
-                                alignment: Alignment.center,
-                                color: Colors.blueGrey.shade800,
-                                child: const Text(
-                                  'remarks',
-                                  style: TextStyle(
-                                      color: Colors.white, fontSize: 10),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black54),
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ScrollableTableView(
+                                  headers: [
+                                    'Document Type',
+                                    'Document Number',
+                                    'Transacting Party',
+                                    'Transaction Date',
+                                    'Check Amount',
+                                    'Remarks',
+                                  ].map((columnName) {
+                                    return TableViewHeader(
+                                      label: columnName,
+                                      minWidth: 150,
+                                    );
+                                  }).toList(),
+                                  rows:
+                                      paginatedTransactions.map((transaction) {
+                                    return TableViewRow(
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    TransactionDataScreen()));
+                                      },
+                                      cells: [
+                                        TableViewCell(
+                                          alignment: Alignment.center,
+                                          child: Center(
+                                            child: Text(
+                                              transaction.docType,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                        TableViewCell(
+                                          alignment: Alignment.center,
+                                          child: Center(
+                                            child: Text(
+                                              transaction.docNo,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                        TableViewCell(
+                                          alignment: Alignment.center,
+                                          child: Center(
+                                            child: Text(
+                                              transaction.transactingParty,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                        TableViewCell(
+                                          alignment: Alignment.center,
+                                          child: Center(
+                                            child: Text(
+                                              formatDate(transaction.dateTrans),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                        TableViewCell(
+                                          alignment: Alignment.center,
+                                          child: Text(
+                                            formatAmount(transaction
+                                                .checkAmount), // Format the check amount
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        TableViewCell(
+                                          padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
+                                          alignment: Alignment.center,
+                                          child: Center(
+                                            child: Text(
+                                              transaction.remarks,
+                                              softWrap: true,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
                                 ),
                               ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          textBaseline: TextBaseline.alphabetic,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back),
+                              onPressed: previousPage,
+                            ),
+                            Text(
+                                '${currentPage} / ${((transactions.length - 1) ~/ rowsPerPage) + 1}'),
+                            IconButton(
+                              icon: const Icon(Icons.arrow_forward),
+                              onPressed: nextPage,
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
       ),
-    );
-  }
-
-  GridColumn _buildGridColumn(String columnName) {
-    return GridColumn(
-      columnName: columnName,
-      label: Container(
-        padding: const EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        color: Colors.blueGrey.shade800,
-        child: Text(
-          columnName,
-          style: const TextStyle(color: Colors.white, fontSize: 10),
-        ),
-      ),
-    );
-  }
-}
-
-class _DataSource extends DataGridSource {
-  final List transactions;
-
-  _DataSource(this.transactions);
-
-  @override
-  List<DataGridRow> get rows => transactions
-      .map((data) => DataGridRow(
-            cells: [
-              DataGridCell(columnName: 'docType', value: data.docType),
-              DataGridCell(columnName: 'docNo', value: data.docNo),
-              DataGridCell(
-                  columnName: 'transactingParty', value: data.transactingParty),
-              DataGridCell(columnName: 'dateTrans', value: data.dateTrans),
-              DataGridCell(columnName: 'checkAmount', value: data.checkAmount),
-              DataGridCell(
-                  columnName: 'transactionStatus',
-                  value: data.transactionStatus),
-              DataGridCell(columnName: 'remarks', value: data.remarks),
-            ],
-          ))
-      .toList();
-
-  @override
-  DataGridRowAdapter buildRow(DataGridRow row) {
-    return DataGridRowAdapter(
-      cells: row.getCells().map((dataCell) {
-        if (dataCell.columnName == 'remarks') {
-          return Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(5.0),
-            child: TextButton(
-              style: TextButton.styleFrom(
-                alignment: Alignment.center,
-              ),
-              onPressed: () => TransactionDataScreen()
-              ,
-              child: const Text(
-                'Add Attachments',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 10),
-              ),
-            ),
-          );
-        }
-        return Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Wrap(
-            alignment: WrapAlignment.center,
-            children: [
-              Text(
-                dataCell.value.toString(),
-                overflow: TextOverflow.visible,
-                style: const TextStyle(
-                  fontWeight: FontWeight.normal,
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
     );
   }
 }
