@@ -1,6 +1,6 @@
 class Transaction {
   final String transactingParty;
-  final String transDate;
+  final DateTime transDate;
   final String checkNo;
   final String docType;
   final String docNo;
@@ -22,7 +22,7 @@ class Transaction {
   factory Transaction.fromJson(Map<String, dynamic> json) {
     return Transaction(
       transactingParty: json['transacting_party'] ?? '',
-      transDate: json['check_date'] ?? '',
+      transDate: DateTime.parse(json['transDate'] ?? ''),
       checkNo: json['check_no'] ?? '',
       docType: json['doc_type'] ?? '',
       checkAmount: json['check_amount'],
@@ -30,5 +30,18 @@ class Transaction {
       checkBankDrawee: json['check_drawee_bank'] ?? '',
       remarks: json['remarks'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'transacting_party': transactingParty,
+      'transDate': transDate.toIso8601String(),
+      'check_no': checkNo,
+      'doc_type': docType,
+      'doc_no': docNo,
+      'check_amount': checkAmount,
+      'check_drawee_bank': checkBankDrawee,
+      'remarks': remarks,
+    };
   }
 }
