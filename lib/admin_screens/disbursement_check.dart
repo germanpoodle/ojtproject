@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import '../models/transaction.dart';
+import '../models/admin_transaction.dart';
+import '../models/user_transaction.dart';
 import '../widgets/card.dart';
 import 'filter_pop_up.dart';
 import 'notifications.dart';
-import 'admin_Homepage.dart'; 
-import 'transactions_history.dart'; 
+import 'admin_homepage.dart'; 
+import 'admin_menu_window.dart'; 
 
 class DisbursementCheque extends StatefulWidget {
   const DisbursementCheque({Key? key}) : super(key: key);
@@ -35,7 +36,7 @@ class _DisbursementChequeState extends State<DisbursementCheque> {
   Future<List<Transaction>> _fetchTransactionDetails() async {
     try {
       var url = Uri.parse(
-          'http://127.0.0.1/localconnect/get_transaction.php?date_trans=$_selectedDate');
+          'http://192.168.68.123/localconnect/get_transaction.php?date_trans=$_selectedDate');
       var response = await http.get(url);
 
       if (response.statusCode == 200) {
@@ -69,6 +70,7 @@ class _DisbursementChequeState extends State<DisbursementCheque> {
       await _fetchTransactionDetails();
     }
   }
+
   void _onItemTapped(int index) {
     if (_selectedIndex == index) return; 
 
@@ -91,7 +93,7 @@ class _DisbursementChequeState extends State<DisbursementCheque> {
       case 2:
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => TransactionsScreen()),
+          MaterialPageRoute(builder: (context) => AdminMenuWindow()),
         );
         break;
     }
@@ -103,6 +105,7 @@ class _DisbursementChequeState extends State<DisbursementCheque> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: const Color.fromARGB(255, 9, 41, 145),
         toolbarHeight: 77,
         title: Row(
@@ -241,8 +244,8 @@ class _DisbursementChequeState extends State<DisbursementCheque> {
             label: 'Disbursement',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
+            icon: Icon(Icons.menu_sharp),
+            label: 'Menu',
           ),
         ],
         currentIndex: _selectedIndex,

@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import '../models/transaction.dart';
+import '../models/admin_transaction.dart';
+import '../models/user_transaction.dart';
 
 class CheckDetailsScreen extends StatefulWidget {
   final Transaction transaction;
@@ -279,7 +280,7 @@ class _CheckDetailsScreenState extends State<CheckDetailsScreen> {
                       // functionality to decline
                     },
                     icon: Icon(Icons.close),
-                    label: Text('Decline',
+                    label: Text('Reject',
                         style: TextStyle(fontSize: 16 * textScaleFactor)),
                     style: ElevatedButton.styleFrom(
                       minimumSize: Size(screenWidth, screenHeight * 0.07),
@@ -287,6 +288,18 @@ class _CheckDetailsScreenState extends State<CheckDetailsScreen> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      // functionality to decline
+                    },
+                    icon: Icon(Icons.close),
+                    label: Text('Decline',
+                        style: TextStyle(fontSize: 16 * textScaleFactor)),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: Size(screenWidth, screenHeight * 0.07),
+                      backgroundColor: Color.fromARGB(255, 175, 164, 164),
+                    ),
+                  ),
                 ],
               ),
             );

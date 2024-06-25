@@ -1,85 +1,209 @@
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'disbursement_details.dart';
+import 'package:http/http.dart' as http;
+import '../models/user_transaction.dart';
+import 'user_homepage.dart';
+import 'user_menu.dart';
+
 class UserAddAttachment extends StatefulWidget {
-  const UserAddAttachment({Key? key}) : super(key: key);
+  final Transaction transaction;
+
+  const UserAddAttachment({
+    Key? key,
+    required this.transaction,
+    required List selectedDetails,
+  }) : super(key: key);
 
   @override
-  State<UserAddAttachment> createState() => _UserAddAttachmentState();
+  _UserAddAttachmentState createState() => _UserAddAttachmentState();
 }
 
 class _UserAddAttachmentState extends State<UserAddAttachment> {
+  int _selectedIndex = 1; // Initialize with the correct index for Upload
   List<Map<String, String>> attachments = [];
   String? _fileName;
   PlatformFile? _pickedFile;
+  bool _isLoading = false;
 
-  Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+  void _onItemTapped(int index) {
+    if (_selectedIndex == index) return;
 
-    if (result != null) {
-      setState(() {
-        _pickedFile = result.files.first;
-        _fileName = _pickedFile!.name;
-        attachments.add({'name': _fileName!, 'status': 'Uploaded'});
-      });
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const UserHomePage()),
+        );
+        break;
+      case 1:
+        // Keep current page (Upload page)
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MenuWindow()),
+        );
+        break;
     }
   }
 
-  Future<void> _requestPermissions() async {
-    if (await Permission.storage.request().isGranted) {
-      _pickFile();
+  Future<void> _pickFile() async {
+    developer.log('Picking file...');
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        _pickedFile = result.files.first;
+        _fileName = _pickedFile?.name ?? 'Unknown';
+        attachments.add({'name': _fileName!, 'status': 'Selected'});
+        developer.log('Attachments array after adding: $attachments');
+      });
+      developer.log('File picked: $_fileName');
+    } else {
+      developer.log('File picking cancelled');
+    }
+  }
+
+  Future<void> _uploadFile(PlatformFile pickedFile) async {
+    setState(() {
+      _isLoading = true; // Show loading indicator
+    });
+
+    try {
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('http://192.168.68.114/localconnect/uploads/uploads.php'),
+      );
+
+      // Add the 'doc_type', 'doc_no', and 'date_trans' fields to the request
+      request.fields['doc_type'] = widget.transaction.docType.toString();
+      request.fields['doc_no'] = widget.transaction.docNo.toString();
+      request.fields['date_trans'] = widget.transaction.dateTrans.toString();
+
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          'file',
+          pickedFile.bytes!,
+          filename: pickedFile.name,
+        ),
+      );
+
+      developer.log('Uploading file: ${pickedFile.name}');
+      var response = await request.send();
+
+      if (response.statusCode == 200) {
+        var responseBody = await response.stream.bytesToString();
+        developer.log('Upload response: $responseBody');
+
+        try {
+          var result = jsonDecode(responseBody);
+          if (result['status'] == 'success') {
+            setState(() {
+              attachments
+                  .removeWhere((element) => element['name'] == _fileName);
+              attachments.add({'name': _fileName!, 'status': 'Uploaded'});
+              developer.log('Attachments array after uploading: $attachments');
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('File uploaded successfully!')),
+            );
+
+            // Navigate back to previous screen (DisbursementDetailsScreen)
+            Navigator.pop(context);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text('File upload failed: ${result['message']}')),
+            );
+            developer.log('File upload failed: ${result['message']}');
+          }
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Error uploading file. Please try again later.')),
+          );
+          developer.log('Error parsing upload response: $e');
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(
+                  'File upload failed with status: ${response.statusCode}')),
+        );
+        developer.log('File upload failed with status: ${response.statusCode}');
+      }
+    } catch (e) {
+      developer.log('Error uploading file: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Error uploading file. Please try again later.')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading indicator
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-
+    Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 9, 41, 145),
+        automaticallyImplyLeading: false,
+        backgroundColor: Color.fromARGB(255, 79, 128, 189),
         toolbarHeight: 77,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'View Disbursement Details',
-              style: TextStyle(
-                fontSize: 25,
-                color: Color.fromARGB(255, 233, 227, 227),
-              ),
+            Row(
+              children: [
+                Image.asset(
+                  'logo.png',
+                  width: 60,
+                  height: 55,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'For Uploading',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'Tahoma',
+                    color: Color.fromARGB(255, 233, 227, 227),
+                  ),
+                ),
+              ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
-                  margin: EdgeInsets.only(right: screenWidth * 0.02),
+                  margin: EdgeInsets.only(right: screenSize.width * 0.02),
                   child: IconButton(
                     onPressed: () {
-                      // Handle notification button press
-                      print('Notification button pressed');
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //       builder: (context) => NotificationScreen()),
+                      // );
                     },
                     icon: const Icon(
                       Icons.notifications,
-                      size: 25,
-                      color: Color.fromARGB(255, 126, 124, 124),
+                      size: 24,
+                      color: Color.fromARGB(255, 233, 227, 227),
                     ),
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Handle profile button press
-                    print('Profile button pressed');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(125, 68, 65, 65),
-                    padding: const EdgeInsets.all(5),
-                    shape: const CircleBorder(),
-                  ),
-                  child: const Icon(
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
                     Icons.person,
-                    size: 25,
+                    size: 24,
                     color: Color.fromARGB(255, 233, 227, 227),
                   ),
                 ),
@@ -145,7 +269,8 @@ class _UserAddAttachmentState extends State<UserAddAttachment> {
                   for (var attachment in attachments)
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 5.0),
-                      child: _buildAttachmentItem(attachment['name']!, attachment['status']!),
+                      child: _buildAttachmentItem(
+                          attachment['name']!, attachment['status']!),
                     ),
                   const Spacer(),
                   Padding(
@@ -155,17 +280,21 @@ class _UserAddAttachmentState extends State<UserAddAttachment> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => DisbursementDetailsScreen()),
-            );
+                            setState(() {
+                              attachments.clear();
+                            });
+                            Navigator.pop(context);
+                            developer.log('Discard button pressed');
                           },
                           child: const Text('Discard'),
                         ),
                         ElevatedButton(
-                          onPressed: () {
-                            // Handle attach file button press
-                            print('Attach file button pressed');
+                          onPressed: () async {
+                            if (_pickedFile != null) {
+                              await _uploadFile(_pickedFile!);
+                            } else {
+                              developer.log('No file selected');
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
@@ -175,9 +304,32 @@ class _UserAddAttachmentState extends State<UserAddAttachment> {
                       ],
                     ),
                   ),
+                  if (_isLoading) // Show loading indicator when uploading
+                    const Center(
+                      child: CircularProgressIndicator(),
+                    ),
                 ],
               ),
             ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        selectedItemColor: Color.fromARGB(255, 79, 128, 189),
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.upload_file_outlined),
+            label: 'Upload',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'No Support',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_sharp),
+            label: 'Menu',
           ),
         ],
       ),
@@ -219,7 +371,8 @@ class _UserAddAttachmentState extends State<UserAddAttachment> {
           onPressed: () {
             setState(() {
               attachments.removeWhere((element) => element['name'] == fileName);
-              print('Attachment removed: $fileName');
+              developer.log('Attachment removed: $fileName');
+              developer.log('Attachments array after removing: $attachments');
             });
           },
           icon: const Icon(Icons.close),
@@ -228,4 +381,3 @@ class _UserAddAttachmentState extends State<UserAddAttachment> {
     );
   }
 }
-

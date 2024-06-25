@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/transaction.dart';
+import '../models/admin_transaction.dart';
 import '../services/api_service.dart';
 import '../widgets/card.dart';
 import 'disbursement_check.dart';
@@ -47,9 +47,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:
-      const Text('Transactions'),
-      automaticallyImplyLeading: false,),
+      appBar: AppBar(
+        title: const Text('Transactions'),
+        automaticallyImplyLeading: false,
+      ),
+      body: Center(
+        child: const Text(
+          'No transaction found!',
+          style: TextStyle(fontSize: 16),
+        ),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -61,8 +68,8 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
             label: 'Disbursement',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'History',
+            icon: Icon(Icons.menu_sharp),
+            label: 'Menu',
           ),
         ],
         currentIndex: _selectedIndex,

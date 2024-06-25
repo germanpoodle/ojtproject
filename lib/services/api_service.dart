@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/transaction.dart';
+import '../models/user_transaction.dart';
 
 Future<List<Transaction>> fetchTransactions() async {
   final response = await http.get(Uri.parse('http://http://192.168.68.116/localconnect/get_transaction.php'));

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/transaction.dart';
+import '../models/admin_transaction.dart';
+import '../models/user_transaction.dart';
 import '/admin_screens/check_details.dart';
 import 'package:intl/intl.dart';
 
@@ -7,7 +8,7 @@ String formatDate(DateTime date) {
     final DateFormat formatter = DateFormat('MM/dd/yyyy');
     return formatter.format(date);
   }
-  
+
 class CustomCardExample extends StatelessWidget {
   final Transaction transaction;
 

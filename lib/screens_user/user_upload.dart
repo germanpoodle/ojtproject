@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import '../models/disbursement_data_model.dart';
-import '../screens_user/disbursement_details.dart';
 import 'dart:convert';
-import 'package:scrollable_table_view/scrollable_table_view.dart';
 import 'package:intl/intl.dart';
+import 'package:scrollable_table_view/scrollable_table_view.dart';
 
-import '../models/transaction.dart';
+import '../models/user_transaction.dart'; // Import your Transaction model
+import 'disbursement_details.dart'; // Import the DisbursementDetailsScreen
 
-void main() {
-  runApp(const UserUpload());
-}
+// void main() {
+//   runApp(const UserUpload());
+// }
 
-class UserUpload extends StatefulWidget {
+class UserUpload extends StatelessWidget {
   const UserUpload({Key? key}) : super(key: key);
 
-  @override
-  State<UserUpload> createState() => _UserUploadState();
-}
-
-class _UserUploadState extends State<UserUpload> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
@@ -39,10 +34,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late List<Transaction> transactions;
   late bool isLoading;
-  String selectedColumn = 'docType';
-  List<String> docTypes = [];
+  String selectedColumn = 'docRef';
+  List<String> headers = ['Doc Ref', 'Payor', 'Amount'];
+  bool isAscending = true;
   int currentPage = 1;
   int rowsPerPage = 20;
+  int _selectedIndex = 0; // Add this line to manage the active tab state
 
   @override
   void initState() {
@@ -55,7 +52,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> fetchTransactions() async {
     try {
       final response = await http.get(Uri.parse(
-          'http://127.0.0.1/localconnect/fetch_transaction_data.php'));
+          'http://192.168.68.114/localconnect/fetch_transaction_data.php'));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -63,9 +60,6 @@ class _HomePageState extends State<HomePage> {
           transactions =
               data.map((json) => Transaction.fromJson(json)).toList();
           isLoading = false;
-
-          // Extract unique values for docType
-          docTypes = transactions.map((e) => e.docType).toSet().toList();
         });
       } else {
         throw Exception(
@@ -90,7 +84,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   String formatDate(DateTime date) {
-    final DateFormat formatter = DateFormat('MM/dd/yyyy');
+    final DateFormat formatter = DateFormat('MM/dd/yy');
     return formatter.format(date);
   }
 
@@ -103,8 +97,79 @@ class _HomePageState extends State<HomePage> {
     return currencyFormat.format(amount);
   }
 
+  String createDocRef(String docType, String docNo, DateTime transDate) {
+    final String formattedDate = formatDate(transDate);
+    return 'Ref: $docType#$docNo; $formattedDate';
+  }
+
+  void sortTransactions(String columnName) {
+    setState(() {
+      if (selectedColumn == columnName) {
+        isAscending = !isAscending;
+      } else {
+        selectedColumn = columnName;
+        isAscending = true;
+      }
+
+      switch (columnName) {
+        case 'Doc Ref':
+          transactions.sort((a, b) {
+            final String docRefA =
+                createDocRef(a.docType, a.docNo, a.transDate);
+            final String docRefB =
+                createDocRef(b.docType, b.docNo, b.transDate);
+            return isAscending
+                ? docRefA.compareTo(docRefB)
+                : docRefB.compareTo(docRefA);
+          });
+          break;
+        case 'Payor':
+          transactions.sort((a, b) => isAscending
+              ? a.transactingParty.compareTo(b.transactingParty)
+              : b.transactingParty.compareTo(a.transactingParty));
+          break;
+        case 'Amount':
+          transactions.sort((a, b) => isAscending
+              ? a.checkAmount.compareTo(b.checkAmount)
+              : b.checkAmount.compareTo(a.checkAmount));
+          break;
+      }
+    });
+  }
+
+  void navigateToDetails(Transaction transaction) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DisbursementDetailsScreen(
+          transaction: transaction,
+          selectedDetails: [], // Adjust based on your requirements
+        ),
+      ),
+    );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    // Handle navigation to different screens based on the tapped item
+    switch (index) {
+      case 0:
+        // Navigate to "For Upload" screen
+        break;
+      case 1:
+        // Navigate to "No Support" screen
+        break;
+      case 2:
+        // Navigate to "Menu" screen
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
     final screenWidth = MediaQuery.of(context).size.width;
     final paginatedTransactions = transactions
         .skip((currentPage - 1) * rowsPerPage)
@@ -113,42 +178,54 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 9, 41, 145),
+        automaticallyImplyLeading: false,
+        backgroundColor: Color.fromARGB(255, 79, 128, 189),
         toolbarHeight: 77,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Disbursement',
-              style: TextStyle(
-                fontSize: 25,
-                color: Color.fromARGB(255, 233, 227, 227),
-              ),
+            Row(
+              children: [
+                Image.asset(
+                  'logo.png',
+                  width: 60,
+                  height: 55,
+                ),
+                const SizedBox(width: 8),
+                const Text(
+                  'For Uploading',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color.fromARGB(255, 233, 227, 227),
+                  ),
+                ),
+              ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Container(
-                  margin: EdgeInsets.only(right: screenWidth * 0.02),
+                  margin: EdgeInsets.only(right: screenSize.width * 0.02),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(
+                      //       builder: (context) => NotificationScreen()),
+                      // );
+                    },
                     icon: const Icon(
                       Icons.notifications,
-                      size: 25,
+                      size: 24, // Adjust size as needed
                       color: Color.fromARGB(255, 233, 227, 227),
                     ),
                   ),
                 ),
-                ElevatedButton(
+                IconButton(
                   onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(125, 68, 65, 65),
-                    padding: const EdgeInsets.all(5),
-                    shape: const CircleBorder(),
-                  ),
-                  child: const Icon(
+                  icon: const Icon(
                     Icons.person,
-                    size: 25,
+                    size: 24, // Adjust size as needed
                     color: Color.fromARGB(255, 233, 227, 227),
                   ),
                 ),
@@ -161,12 +238,17 @@ class _HomePageState extends State<HomePage> {
         child: isLoading
             ? const CircularProgressIndicator()
             : ClipRRect(
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(8),
                 child: Container(
                   margin: const EdgeInsets.all(16.0),
                   child: Container(
+                    padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black54),
+                      borderRadius: BorderRadius.circular(8.0),
+                      border: Border.all(
+                          color: Color.fromARGB(255, 79, 128, 189),
+                          strokeAlign: BorderSide.strokeAlignOutside,
+                          width: 2.0),
                     ),
                     child: Column(
                       children: [
@@ -175,81 +257,50 @@ class _HomePageState extends State<HomePage> {
                             children: [
                               Expanded(
                                 child: ScrollableTableView(
-                                  headers: [
-                                    'Document Type',
-                                    'Document Number',
-                                    'Transacting Party',
-                                    'Transaction Date',
-                                    'Check Amount',
-                                    'Remarks',
-                                  ].map((columnName) {
+                                  headers: headers.map((columnName) {
                                     return TableViewHeader(
+                                      labelFontSize: 12,
                                       label: columnName,
+                                      padding: const EdgeInsets.all(8),
                                       minWidth: 150,
+                                      alignment: columnName == 'Amount'
+                                          ? Alignment.centerRight
+                                          : Alignment.center,
                                     );
                                   }).toList(),
                                   rows:
                                       paginatedTransactions.map((transaction) {
                                     return TableViewRow(
+                                      height: 55,
                                       onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    DisbursementDetailsScreen()));
+                                        navigateToDetails(transaction);
                                       },
                                       cells: [
                                         TableViewCell(
                                           alignment: Alignment.center,
-                                          child: Center(
-                                            child: Text(
-                                              transaction.docType,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                        TableViewCell(
-                                          alignment: Alignment.center,
-                                          child: Center(
-                                            child: Text(
-                                              transaction.docNo,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                        TableViewCell(
-                                          alignment: Alignment.center,
-                                          child: Center(
-                                            child: Text(
-                                              transaction.transactingParty,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                        TableViewCell(
-                                          alignment: Alignment.center,
-                                          child: Center(
-                                            child: Text(
-                                              transaction.transDate,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                        TableViewCell(
-                                          alignment: Alignment.center,
+                                          padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            (transaction.checkAmount), // Format the check amount
-                                            overflow: TextOverflow.ellipsis,
+                                            createDocRef(
+                                                transaction.docType,
+                                                transaction.docNo,
+                                                transaction.transDate),
+                                            softWrap: true,
                                           ),
                                         ),
                                         TableViewCell(
-                                          padding: const EdgeInsets.fromLTRB(4, 0, 4, 0),
-                                          alignment: Alignment.center,
-                                          child: Center(
-                                            child: Text(
-                                              transaction.remarks,
-                                              softWrap: true,
-                                            ),
+                                          padding: const EdgeInsets.all(8.0),
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            transaction.transactingParty,
+                                            softWrap: true,
+                                          ),
+                                        ),
+                                        TableViewCell(
+                                          alignment: Alignment.centerRight,
+                                          child: Text(
+                                            formatAmount(
+                                                transaction.checkAmount),
+                                            softWrap: true,
                                           ),
                                         ),
                                       ],
@@ -270,7 +321,7 @@ class _HomePageState extends State<HomePage> {
                               onPressed: previousPage,
                             ),
                             Text(
-                                '${currentPage} / ${((transactions.length - 1) ~/ rowsPerPage) + 1}'),
+                                '$currentPage / ${((transactions.length - 1) / rowsPerPage).ceil()}'),
                             IconButton(
                               icon: const Icon(Icons.arrow_forward),
                               onPressed: nextPage,
@@ -282,6 +333,25 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        selectedItemColor: Color.fromARGB(255, 79, 128, 189),
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.upload_file_outlined),
+            label: 'Upload',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.quiz),
+            label: 'No Support',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_sharp),
+            label: 'Menu',
+          ),
+        ],
       ),
     );
   }

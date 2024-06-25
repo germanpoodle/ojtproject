@@ -4,12 +4,24 @@ import 'dart:convert';
 import 'screens_user/user_homepage.dart';
 import 'admin_screens/Admin_Homepage.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
-  Future<void> loginUser(BuildContext context, String username, String password) async {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  String username = '';
+  String password = '';
+  bool isPasswordVisible = false;
+  bool isPasswordValid = true;
+  final TextEditingController passwordController = TextEditingController();
+
+  Future<void> loginUser(
+      BuildContext context, String username, String password) async {
     try {
-      final url = Uri.parse('http://127.0.0.1/localconnect/login.php');
+      final url = Uri.parse('http://localhost/localconnect/login.php');
       final response = await http.post(
         url,
         body: {
@@ -23,16 +35,16 @@ class LoginScreen extends StatelessWidget {
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
         if (jsonResponse['status'] == 'success') {
-          String userRank = jsonResponse['user_rank']; 
+          String userRank = jsonResponse['user_rank'];
           if (userRank.toLowerCase() == 'admin') {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AdminHomePage()),
+              MaterialPageRoute(builder: (context) => const AdminHomePage()),
             );
           } else {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => UserHomePage()),
+              MaterialPageRoute(builder: (context) => const UserHomePage()),
             );
           }
         } else {
@@ -40,11 +52,11 @@ class LoginScreen extends StatelessWidget {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text('Login Failed'),
+                title: const Text('Login Failed'),
                 content: Text(jsonResponse['message']),
                 actions: <Widget>[
                   TextButton(
-                    child: Text('OK'),
+                    child: const Text('OK'),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -63,11 +75,11 @@ class LoginScreen extends StatelessWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Error'),
+            title: const Text('Error'),
             content: Text('Failed to connect to server. Error: $e'),
             actions: <Widget>[
               TextButton(
-                child: Text('OK'),
+                child: const Text('OK'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -79,11 +91,20 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
+  void togglePasswordVisibility() {
+    setState(() {
+      isPasswordVisible = !isPasswordVisible;
+    });
+  }
+
+  void validatePassword(String value) {
+    setState(() {
+      isPasswordValid = value.isNotEmpty;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    String username = '';
-    String password = '';
-
     return Scaffold(
       body: Stack(
         children: [
@@ -93,8 +114,8 @@ class LoginScreen extends StatelessWidget {
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  Color.fromARGB(255, 27, 7, 136),
-                  Color.fromARGB(255, 131, 108, 216),
+                  Color.fromARGB(255, 79, 128, 189),
+                  Color.fromARGB(255, 79, 128, 189),
                 ],
               ),
             ),
@@ -106,8 +127,17 @@ class LoginScreen extends StatelessWidget {
                   fontSize: 30,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Tahoma Bold',
                 ),
               ),
+            ),
+          ),
+          Container(
+            margin: const EdgeInsets.only(left: 270, top: 25),
+            child: Image.asset(
+              'logo.png',
+              width: 150,
+              height: 155,
             ),
           ),
           Padding(
@@ -141,54 +171,66 @@ class LoginScreen extends StatelessWidget {
                           labelText: 'Username',
                           labelStyle: TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
+                            color: Color.fromARGB(255, 79, 128, 189),
+                            fontFamily: 'Tahoma Bold',
                           ),
                         ),
+                        style: const TextStyle(fontFamily: 'Tahoma Bold'),
                       ),
                     ),
                     Container(
                       width: 335,
                       child: TextField(
+                        controller: passwordController,
                         onChanged: (value) {
                           password = value;
+                          validatePassword(value);
                         },
-                        obscureText: true,
-                        decoration: const InputDecoration(
-                          suffixIcon: Icon(
-                            Icons.visibility_off,
-                            color: Colors.grey,
+                        obscureText: !isPasswordVisible,
+                        decoration: InputDecoration(
+                          suffixIcon: GestureDetector(
+                            onTap: togglePasswordVisibility,
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: isPasswordVisible
+                                  ? Icon(Icons.visibility, key: UniqueKey())
+                                  : Icon(Icons.visibility_off,
+                                      key: UniqueKey()),
+                            ),
                           ),
                           labelText: 'Password',
-                          labelStyle: TextStyle(
+                          labelStyle: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xffB81736),
+                            color: Color.fromARGB(255, 79, 128, 189),
+                            fontFamily: 'Tahoma Bold',
                           ),
+                          errorText: isPasswordValid
+                              ? null
+                              : 'Password cannot be empty',
+                          errorStyle: const TextStyle(
+                              color: Colors.red, fontFamily: 'Tahoma Bold'),
                         ),
+                        style: const TextStyle(fontFamily: 'Tahoma Bold'),
                       ),
                     ),
                     const SizedBox(
                       height: 20,
                     ),
                     Container(
-                      margin: EdgeInsets.only(right: 95),
-                      child: Align(
-                        alignment: Alignment.centerRight,
+                      child: Center(
                         child: GestureDetector(
                           onTap: () {
                             // Implement Forgot Password functionality
                           },
-                          child: const Text(
-                            'Forgot Password?',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              color: Color(0xff281537),
-                            ),
+                          child: TextButton(
+                            onPressed: () {},
+                            child: const Text('Forgot Password?',
+                                style: TextStyle(fontFamily: 'Tahoma Bold')),
                           ),
                         ),
                       ),
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 20,
                     ),
                     GestureDetector(
@@ -202,8 +244,8 @@ class LoginScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(15),
                           gradient: const LinearGradient(
                             colors: [
-                              Color(0xffB81736),
-                              Color(0xff281537),
+                              Color.fromARGB(255, 79, 128, 189),
+                              Color.fromARGB(255, 148, 173, 203),
                             ],
                           ),
                         ),
@@ -214,9 +256,40 @@ class LoginScreen extends StatelessWidget {
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
+                              fontFamily: 'Tahoma Bold',
                             ),
                           ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        // Implement biometric login functionality
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {},
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Icon(Icons.fingerprint,
+                                    color: Color.fromARGB(255, 79, 128, 189)),
+                                Text(
+                              'Sign in with Biometrics',
+                              style: TextStyle(
+                                color: Color.fromARGB(255, 79, 128, 189),
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Tahoma Bold',
+                              ),
+                            ),                            
+                                ],
+                            ),
+                            
+                          )
+                        ],
                       ),
                     ),
                   ],
